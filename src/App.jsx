@@ -42,17 +42,52 @@ const CuentaUsuario = () => {
   const [materialTecho, setMaterialTecho] = useState("");
   const [materialPiso, setMaterialPiso] = useState("");
   const [diagnosticoSocial, setDiagnosticoSocial] = useState("");
+const [ingresosHogar, setIngresosHogar] = useState([
+  { trabajo: 0, programas: 0, otros: 0 },
+  { trabajo: 0, programas: 0, otros: 0 },
+  { trabajo: 0, programas: 0, otros: 0 },
+  { trabajo: 0, programas: 0, otros: 0 },
+  { trabajo: 0, programas: 0, otros: 0 },
+  { trabajo: 0, programas: 0, otros: 0 },
+]);
 
+const handleIngresoChange = (index, campo, valor) => {
+  const copia = [...ingresosHogar];
+  copia[index][campo] = parseFloat(valor) || 0;
+  setIngresosHogar(copia);
+};
 
-
-
-
+const totalIngresos = ingresosHogar.reduce(
+  (totales, fila) => ({
+    trabajo: totales.trabajo + fila.trabajo,
+    programas: totales.programas + fila.programas,
+    otros: totales.otros + fila.otros,
+  }),
+  { trabajo: 0, programas: 0, otros: 0 }
+);
 
 
 
   const handleChange = (e) => {
     setFubsTipo(e.target.value);
   };
+
+
+      // ✅ Función para permitir solo letras y espacios
+      const soloLetras = (valor) => {
+        return valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "");
+      };
+
+      // ✅ Función para reutilizar lógica de onChange
+      const manejarCambioTexto = (setter) => (e) => {
+        setter(soloLetras(e.target.value));
+      };
+
+      const soloNumerosPositivos = (setter) => (e) => {
+        const value = parseInt(e.target.value, 10);
+        setter(isNaN(value) || value < 0 ? "" : value);
+      };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,7 +135,11 @@ num_dormitorios: numDormitorios,
 personas_dormitorio: personasPorDormitorio,material_paredes: materialParedes,
 material_techo: materialTecho,
 material_piso: materialPiso,
-diagnostico_social: diagnosticoSocial
+diagnostico_social: diagnosticoSocial,
+ingresos_trabajo: totalIngresos.trabajo,
+ingresos_programas: totalIngresos.programas,
+ingresos_otros: totalIngresos.otros
+
 
 
 }),
@@ -126,7 +165,9 @@ diagnostico_social: diagnosticoSocial
         style={{ backgroundColor: "#b4935a", color: "white" }}
         className="py-3 border-bottom w-100"
       >
-        <div className="container d-flex justify-content-between align-items-center">
+       
+        <div className="d-flex justify-content-between align-items-center px-4">
+  
           <div className="fw-bold fs-4">
             <img src={logo} alt="Logo AEEH" height="40" className="me-2" />
           </div>
@@ -156,7 +197,8 @@ diagnostico_social: diagnosticoSocial
         </div>
       </header>
 
-      <main className="container my-5">
+      <main className="my-5 px-4  container-fluid">
+
         <h5 className="text-danger">Mi cuenta</h5>
         <p className="text-center">
           <strong>Mensajes:</strong> Tu documentación ha sido revisada y hemos
@@ -187,17 +229,18 @@ diagnostico_social: diagnosticoSocial
                   ][i - 1]}
                 </button>
               </h2>
+            
               <div
-                id={`cuenta${i}`}
-                className={`accordion-collapse collapse ${
-                  i === 1 ? "show" : ""
-                }`}
+               id={`cuenta${i}`}
+                className={`accordion-collapse collapse ${i === 1 ? "show" : ""}`}
+                style={{ width: "100%" }} 
               >
-                <div className="accordion-body">
+              <div className="accordion-body px-0" style={{ width: "100%" }}>
+
                   {i === 4 ? (
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit}  className="w-100"  style={{ width: "100%" } }>
                       <fieldset>
-                        <legend className="mb-3">Datos Generales</legend>
+                        <legend className="mb-3">1.-Datos Generales</legend>
 
                         <div className="form-check">
                           <input
@@ -268,7 +311,7 @@ diagnostico_social: diagnosticoSocial
                             </label>
                           </div>
                                           <hr className="my-4" />
-                      <legend className="mb-2">Datos personales</legend>
+                      <legend className="mb-2">2.2.-Datos del contacto(en caso de no encontrar al solicitante)</legend>
 
                       <div className="mb-3">
                         <label className="form-label">Apellido Paterno:</label>
@@ -276,7 +319,7 @@ diagnostico_social: diagnosticoSocial
                           type="text"
                           className="form-control"
                           value={apellidoPaterno}
-                          onChange={(e) => setApellidoPaterno(e.target.value)}
+                            onChange={manejarCambioTexto(setApellidoPaterno)}
                         />
                       </div>
 
@@ -286,7 +329,8 @@ diagnostico_social: diagnosticoSocial
                           type="text"
                           className="form-control"
                           value={apellidoMaterno}
-                          onChange={(e) => setApellidoMaterno(e.target.value)}
+                          onChange={manejarCambioTexto(setApellidoMaterno)}
+                          
                         />
                       </div>
 
@@ -296,9 +340,10 @@ diagnostico_social: diagnosticoSocial
                           type="text"
                           className="form-control"
                           value={nombreCompleto}
-                          onChange={(e) => setNombreCompleto(e.target.value)}
+                         
+                          onChange={manejarCambioTexto(setNombreCompleto)}
                         />
-</div>
+                      </div>
 
 <div className="mb-3">
   <label className="form-label">Fecha de nacimiento:</label>
@@ -316,7 +361,7 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={edad}
-    onChange={(e) => setEdad(e.target.value)}
+    onChange={soloNumerosPositivos(setEdad)}
   />
 </div>
 
@@ -361,31 +406,45 @@ diagnostico_social: diagnosticoSocial
 </div>
 
 <hr />
-<legend className="mb-2 mt-4">2.2.1 Datos de residencia del contacto</legend>
+<legend className="mb-2 mt-4">2.2.1.- Datos de residencia del contacto</legend>
 
 <div className="mb-3">
   <label className="form-label">Municipio:</label>
-  <input className="form-control" value={municipio} onChange={(e) => setMunicipio(e.target.value)} />
+  <input className="form-control" value={municipio} 
+  
+    onChange={manejarCambioTexto(setMunicipio)}
+  
+  />
 </div>
 <div className="mb-3">
   <label className="form-label">Localidad:</label>
-  <input className="form-control" value={localidad} onChange={(e) => setLocalidad(e.target.value)} />
+  <input className="form-control" value={localidad} 
+  
+  onChange={manejarCambioTexto(setLocalidad)} />
 </div>
 <div className="mb-3">
   <label className="form-label">Colonia:</label>
-  <input className="form-control" value={colonia} onChange={(e) => setColonia(e.target.value)} />
+  <input className="form-control" value={colonia}
+  onChange={manejarCambioTexto(setColonia)} 
+   />
 </div>
 <div className="mb-3">
   <label className="form-label">Calle:</label>
-  <input className="form-control" value={calle} onChange={(e) => setCalle(e.target.value)} />
+  <input className="form-control" value={calle} 
+  
+  onChange={manejarCambioTexto(setCalle)} />
 </div>
 <div className="mb-3">
   <label className="form-label">Número de casa:</label>
-  <input className="form-control" value={numeroCasa} onChange={(e) => setNumeroCasa(e.target.value)} />
+  <input   type="number" className="form-control" value={numeroCasa} 
+  
+  onChange={soloNumerosPositivos(setNumeroCasa)} />
 </div>
 <div className="mb-3">
   <label className="form-label">Código Postal:</label>
-  <input className="form-control" value={codigoPostal} onChange={(e) => setCodigoPostal(e.target.value)} />
+  <input   type="number" className="form-control" value={codigoPostal} 
+  onChange={soloNumerosPositivos(setCodigoPostal)}
+  />
 </div>
 <div className="mb-3">
   <label className="form-label">CURP:</label>
@@ -393,27 +452,69 @@ diagnostico_social: diagnosticoSocial
 </div>
 <div className="mb-3">
   <label className="form-label">Teléfono Fijo:</label>
-  <input className="form-control" value={telefonoFijo} onChange={(e) => setTelefonoFijo(e.target.value)} />
+    <input
+    type="tel"
+    className="form-control"
+    maxLength="10"
+    value={telefonoFijo}
+    onChange={(e) => {
+      const soloNumeros = e.target.value.replace(/\D/g, ""); // elimina todo lo que no sea dígito
+      if (soloNumeros.length <= 10) {
+        setTelefonoFijo(soloNumeros);
+      }
+    }}
+  />
 </div>
+
 <div className="mb-3">
   <label className="form-label">Teléfono Celular:</label>
-  <input className="form-control" value={telefonoCelular} onChange={(e) => setTelefonoCelular(e.target.value)} />
+  <input
+    type="tel"
+    className="form-control"
+    maxLength="10"
+    value={telefonoCelular}
+    onChange={(e) => {
+      const soloNumeros = e.target.value.replace(/\D/g, ""); // Elimina todo lo que no sea número
+      if (soloNumeros.length <= 10) {
+        setTelefonoCelular(soloNumeros);
+      }
+    }}
+  />
 </div>
+
+
 <div className="mb-3">
   <label className="form-label">Correo Electrónico:</label>
   <input className="form-control" value={correo} onChange={(e) => setCorreo(e.target.value)} />
 </div>
 <div className="mb-3">
   <label className="form-label">Parentesco o Relación con la o el solicitante del programa:</label>
-  <input className="form-control" value={parentesco} onChange={(e) => setParentesco(e.target.value)} />
+  <input className="form-control" value={parentesco} 
+  
+  onChange={manejarCambioTexto(setParentesco)}
+   />
 </div>
 <div className="mb-3">
   <label className="form-label">Teléfono de contacto para recados:</label>
-  <input className="form-control" value={contactoRecado} onChange={(e) => setContactoRecado(e.target.value)} />
+  <input
+    type="tel"
+    className="form-control"
+    pattern="[0-9]{10}"
+    maxLength="10"
+    value={contactoRecado}
+    onChange={(e) => {
+      const value = e.target.value;
+      // Solo permitir dígitos numéricos y máximo 10 caracteres
+      if (/^\d{0,10}$/.test(value)) {
+        setContactoRecado(value);
+      }
+    }}
+  />
 </div>
 
+
 <hr />
-<legend className="mb-2 mt-4">Información específica del programa</legend>
+<legend className="mb-2 mt-4">4.-Información específica del programa</legend>
 
 <div className="mb-3">
   <label className="form-label">Número de habitantes en la vivienda (incluye persona solicitante):</label>
@@ -421,7 +522,8 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={habitantesVivienda}
-    onChange={(e) => setHabitantesVivienda(e.target.value)}
+   
+     onChange={soloNumerosPositivos(setHabitantesVivienda)}
   />
 </div>
 
@@ -431,10 +533,82 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={miembrosProgramaSocial}
-    onChange={(e) => setMiembrosProgramaSocial(e.target.value)}
+    
+      onChange={soloNumerosPositivos(setMiembrosProgramaSocial)}
   />
 </div>
 
+
+<hr />
+<legend className="mb-2 mt-4">Ingreso Mensual</legend>
+<p>Anote a todas las personas del hogar</p>
+
+<table className="table table-bordered text-center">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Parentesco</th>
+      <th>Edad</th>
+      <th>Jefe de Familia</th>
+      <th>Actividad Principal</th>
+      <th>Por trabajo</th>
+      <th>Programas sociales</th>
+      <th>Otro tipo de ingresos</th>
+    </tr>
+  </thead>
+  <tbody>
+    {ingresosHogar.map((fila, index) => (
+      <tr key={index}>
+        <td>{index + 1}</td>
+        <td><input className="form-control" /></td>
+        <td><input type="number" className="form-control" /></td>
+        <td>
+          <select className="form-select">
+            <option>Sí</option>
+            <option>No</option>
+          </select>
+        </td>
+        <td><input className="form-control" /></td>
+        <td>
+          <input
+            type="number"
+            className="form-control"
+            value={fila.trabajo}
+            onChange={(e) =>
+              handleIngresoChange(index, "trabajo", e.target.value)
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="number"
+            className="form-control"
+            value={fila.programas}
+            onChange={(e) =>
+              handleIngresoChange(index, "programas", e.target.value)
+            }
+          />
+        </td>
+        <td>
+          <input
+            type="number"
+            className="form-control"
+            value={fila.otros}
+            onChange={(e) =>
+              handleIngresoChange(index, "otros", e.target.value)
+            }
+          />
+        </td>
+      </tr>
+    ))}
+    <tr>
+      <td colSpan="5"><strong>TOTAL</strong></td>
+      <td><strong>${totalIngresos.trabajo}</strong></td>
+      <td><strong>${totalIngresos.programas}</strong></td>
+      <td><strong>${totalIngresos.otros}</strong></td>
+    </tr>
+  </tbody>
+</table>
 
 
 
@@ -557,7 +731,8 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={gastoAlimentacion}
-    onChange={(e) => setGastoAlimentacion(e.target.value)}
+    
+      onChange={soloNumerosPositivos(setGastoAlimentacion)}
   />
 </div>
 
@@ -569,7 +744,8 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={porcentajeAlimentacion}
-    onChange={(e) => setPorcentajeAlimentacion(e.target.value)}
+    onChange={soloNumerosPositivos(setPorcentajeAlimentacion)}
+    
   />
 </div>
 
@@ -584,7 +760,8 @@ diagnostico_social: diagnosticoSocial
     type="number"
     className="form-control"
     value={numDormitorios}
-    onChange={(e) => setNumDormitorios(e.target.value)}
+    
+      onChange={soloNumerosPositivos(setNumDormitorios)} 
   />
 </div>
 
