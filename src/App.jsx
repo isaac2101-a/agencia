@@ -70,7 +70,7 @@ const renderTooltipIngresoMensual = (props) => (
   <Tooltip id="tooltip-ingreso-mensual" {...props} >
     <p style={{ marginBottom: 0 }}>
       Llena la tabla con los datos de todas las personas que viven en tu casa (las mismas que
-      mencionaste en la pregunta 2), sin importar edad o parentesco.
+      mencionaste en la pregunta previa), sin importar edad o parentesco.
     </p>
   </Tooltip>
 );
@@ -141,7 +141,7 @@ const renderTooltipPar = (props) => (
 
 const renderTooltipFilaNumero1 = (props) => (
   <Tooltip id="tooltip-fila-numero-1" {...props} >
-    Esta fila es para ti, como solicitante del programa. Llena todas las columnas excepto la de “Anotar parentesco”, porque ahí ya aparece “(Solicitante)”.
+   
   </Tooltip>
 );
 
@@ -152,6 +152,15 @@ const renderTooltipFilaNumero1 = (props) => (
 const renderTooltipActividadTrabajo = (props) => (
   <Tooltip id="tooltip-actividad-principal" {...props}>
     Anota cuánto dinero recibe cada persona de tu hogar al mes. Si la persona no tiene ingresos, escribe 0. Si el ingreso no es mensual, haz el cálculo para convertirlo a mensual. Por ejemplo, si el programa social de la asociación civil da $2,000 cada dos meses a tu hijo, deberás escribir $1,000 como ingreso mensual.
+  </Tooltip>
+);
+
+
+
+
+const renderTooltipTotal = (props) => (
+  <Tooltip id="tooltip-actividad-principal" {...props}>
+    Las últimas celdas de la derecha muestran el dinero que reciben todos los integrantes de tu vivienda al mes, separándolo según el tipo de ingreso: total, por trabajo, por programas sociales, y por otro tipo de ingreso, respectivamente.
   </Tooltip>
 );
 
@@ -232,22 +241,35 @@ const localidadesFiltradas = localidades
   .sort((a, b) => a.loc.localeCompare(b.loc)); // Add this line for alphabetical sorting
 
 
-    const [ingresosHogar, setIngresosHogar] = useState([
-{ parentesco: "Solicitante", edad: "", jefe: "Sí", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-      { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-      { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-      { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-      { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-      { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: 0, programas: 0, otros: 0 },
-    ]);
 
-    const actualizarIngreso = (index, campo, valor) => {
-      const nuevos = [...ingresosHogar];
-      nuevos[index][campo] = campo === "trabajo" || campo === "programas" || campo === "otros"
-        ? parseFloat(valor) || 0
-        : valor;
-      setIngresosHogar(nuevos);
-    };
+
+
+const [ingresosHogar, setIngresosHogar] = useState([
+  { parentesco: "Solicitante", edad: "", jefe: "Sí", actividad: "", trabajo: "", programas: "", otros: "" },
+  { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: "", programas: "", otros: "" },
+  { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: "", programas: "", otros: "" },
+  { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: "", programas: "", otros: "" },
+  { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: "", programas: "", otros: "" },
+  { parentesco: "", edad: "", jefe: "No", actividad: "", trabajo: "", programas: "", otros: "" },
+]);
+
+
+
+const actualizarIngreso = (index, campo, valor) => {
+  const nuevos = [...ingresosHogar];
+  if (campo === "parentesco" || campo === "actividad") {
+    nuevos[index][campo] = soloLetras(valor);
+  } else if (campo === "trabajo" || campo === "programas" || campo === "otros") {
+    nuevos[index][campo] = parseFloat(valor) || 0;
+  } else {
+    nuevos[index][campo] = valor;
+  }
+  setIngresosHogar(nuevos);
+};
+
+
+
+  
 
 
 const handleIngresoChange = (index, campo, valor) => {
@@ -258,12 +280,13 @@ const handleIngresoChange = (index, campo, valor) => {
 
 const totalIngresos = ingresosHogar.reduce(
   (totales, fila) => ({
-    trabajo: totales.trabajo + fila.trabajo,
-    programas: totales.programas + fila.programas,
-    otros: totales.otros + fila.otros,
+    trabajo: totales.trabajo + (parseFloat(fila.trabajo) || 0),
+    programas: totales.programas + (parseFloat(fila.programas) || 0),
+    otros: totales.otros + (parseFloat(fila.otros) || 0),
   }),
   { trabajo: 0, programas: 0, otros: 0 }
 );
+
 
  const totalGeneral = totalIngresos.trabajo + totalIngresos.programas + totalIngresos.otros;
 
@@ -400,8 +423,8 @@ gasto_mensual_familiar: gastoMensualFamiliar
         </div>
       </header>
 
-      <main className="my-5 px-4  container-fluid">
-
+      
+        <main className="my-5 px-4 w-100">
         <h5 className="text-danger">Mi cuenta</h5>
         <p className="text-center">
           <strong>Mensajes:</strong> Tu documentación ha sido revisada y hemos
@@ -427,7 +450,7 @@ gasto_mensual_familiar: gastoMensualFamiliar
                     "Datos de la cuenta",
                     "Datos personales",
                     "Encuesta socioeconómica",
-                    "Formato Único de Persona Solicitante",
+                    "Formato Único de Persona Solicitante (FUPS)",
                     "Documentación",
                   ][i - 1]}
                 </button>
@@ -436,12 +459,12 @@ gasto_mensual_familiar: gastoMensualFamiliar
               <div
                id={`cuenta${i}`}
                 className={`accordion-collapse collapse ${i === 1 ? "show" : ""}`}
-                style={{ width: "100%" }} 
+                 
               >
-              <div className="accordion-body px-0" style={{ width: "100%" }}>
+              <div className="accordion-body px-0" >
 
                   {i === 4 ? (
-                    <form onSubmit={handleSubmit}  className="w-100"  style={{ width: "100%" } }>
+                    <form onSubmit={handleSubmit}  className="w-100"  >
                       <fieldset>
                       <p className="text-muted">
                       Aunque este apartado pide información similar a la de otros apartados, es obligatorio
@@ -935,7 +958,7 @@ gasto_mensual_familiar: gastoMensualFamiliar
 
 
 <legend className="mb-2 mt-4 d-flex align-items-center gap-2">
-  Ingreso Mensual
+  Ingreso Mensual del hogar
   <OverlayTrigger placement="right" overlay={renderTooltipIngresoMensual}>
     <span
       style={{
@@ -957,7 +980,7 @@ gasto_mensual_familiar: gastoMensualFamiliar
   </OverlayTrigger>
 </legend>
 
-<p>Anote a todas las personas del hogar</p>
+<p>Anote a todas las personas del hogar. Considera que la primera fila es para ti, como solicitante del programa.Llena todas las columnas excepto la de "Anotar parentesco", porque ahí aparece la palabra "Solicitante"</p>
 
 <table className="table table-bordered text-center">
   <thead>
@@ -1159,12 +1182,12 @@ gasto_mensual_familiar: gastoMensualFamiliar
         <tbody>
   {ingresosHogar.map((fila, index) => (
     <tr key={index}>
-      <td>
+     <td>
   {index === 0 ? (
-    <OverlayTrigger placement="right" overlay={renderTooltipFilaNumero1}>
-      <span style={{ cursor: "pointer" }}>{index + 1}</span>
-    </OverlayTrigger>
+    // Se eliminó el OverlayTrigger. Ahora solo muestra el número 1.
+    <span>{index + 1}</span>
   ) : (
+    // Para los demás índices, sigue mostrando el número.
     index + 1
   )}
 </td>
@@ -1230,14 +1253,38 @@ gasto_mensual_familiar: gastoMensualFamiliar
 
 
     <tr>
-     <td colSpan="4"><strong>TOTAL</strong></td>
-  <td>
-    <input
-      className="form-control text-center fw-bold bg-light"
-      value={`$${totalGeneral}`}
-      readOnly
-    />
-  </td>
+     <td colSpan="4">
+                                  <div className="d-flex align-items-center justify-content-center gap-2">
+                                    <strong>TOTAL</strong>
+                                    <OverlayTrigger placement="right" overlay={renderTooltipTotal}>
+                                      <span
+                                        style={{
+                                          display: "inline-flex",
+                                          justifyContent: "center",
+                                          alignItems: "center",
+                                          width: "18px",
+                                          height: "18px",
+                                          borderRadius: "50%",
+                                          border: "1px solid #0d6efd",
+                                          color: "#0d6efd",
+                                          fontSize: "12px",
+                                          cursor: "pointer",
+                                          lineHeight: "1"
+                                        }}
+                                      >
+                                        ?
+                                      </span>
+                                    </OverlayTrigger>
+                                  </div>
+                                </td>
+                                {/* Resto de las celdas de total */}
+                                <td>
+                                  <input
+                                    className="form-control text-center fw-bold bg-light"
+                                    value={`$${totalGeneral}`}
+                                    readOnly
+                                  />
+                                </td>
       
       <td><strong>${totalIngresos.trabajo}</strong></td>
       <td><strong>${totalIngresos.programas}</strong></td>

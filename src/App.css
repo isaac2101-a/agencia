@@ -2,17 +2,77 @@
   width: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll if content overflows */
 }
 
+/* Ensure the body and html also take full width */
+html,
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Important for preventing horizontal scroll */
+}
+
+/* Add or adjust these styles for the main content area */
+main {
+  width: 100%;
+  /* Ensure the main content takes full width */
+  max-width: 100%;
+  /* Prevent it from exceeding its container */
+  box-sizing: border-box;
+  /* Include padding and border in the element's total width */
+  padding-left: 15px;
+  /* Add some default horizontal padding */
+  padding-right: 15px;
+  /* Add some default horizontal padding */
+}
+
+/* Make sure container-fluid is truly fluid */
+.container-fluid {
+  width: 100%;
+  max-width: 100%;
+  /* Important: ensure it doesn't have a fixed max-width */
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  /* Use Bootstrap's default gutter */
+  padding-right: var(--bs-gutter-x, 0.75rem);
+  /* Use Bootstrap's default gutter */
+}
+
+
+/* Ensure the form itself is responsive */
+form {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure table responsiveness */
+.table-responsive {
+  overflow-x: auto;
+  /* Add horizontal scroll for small screens if table content overflows */
+}
+
+table {
+  width: 100%;
+  /* Make sure table takes full width of its container */
+  /* Remove min-width unless absolutely necessary and test on small screens */
+  /* min-width: 768px; */
+}
+
+/* Your other styles */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -21,6 +81,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -39,4 +100,3 @@
 .read-the-docs {
   color: #888;
 }
-
