@@ -224,10 +224,12 @@ const CuentaUsuario = () => {
   "Zapotlán de Juárez", "Zempoala", "Zimapán"
 ];
 
-const localidadesFiltradas = localidades.filter(
-  (loc) => loc.mun.toUpperCase() === municipio.toUpperCase()
-);
+const [localidadOtra, setLocalidadOtra] = useState("");
 
+
+const localidadesFiltradas = localidades
+  .filter((loc) => loc.mun.toUpperCase() === municipio.toUpperCase())
+  .sort((a, b) => a.loc.localeCompare(b.loc)); // Add this line for alphabetical sorting
 
 
     const [ingresosHogar, setIngresosHogar] = useState([
@@ -305,7 +307,7 @@ const totalIngresos = ingresosHogar.reduce(
   edad: edad, 
   genero: genero,
   municipio: municipio,
-  localidad: localidad,
+  localidad: localidad === "Otra" ? localidadOtra : localidad,
   colonia: colonia,
   calle: calle,
   numero_casa: numeroCasa,
@@ -703,7 +705,7 @@ gasto_mensual_familiar: gastoMensualFamiliar
     className="form-select"
     value={localidad}
     onChange={(e) => setLocalidad(e.target.value)}
-    disabled={!municipio} // para evitar que se elija antes del municipio
+    disabled={!municipio}
   >
     <option value="">Selecciona una localidad</option>
     {localidadesFiltradas.map((loc, index) => (
@@ -711,8 +713,22 @@ gasto_mensual_familiar: gastoMensualFamiliar
         {loc.loc}
       </option>
     ))}
+    <option value="Otra">OTRA</option>
   </select>
+
+  {localidad === "Otra" && (
+    <div className="mt-2">
+      <label className="form-label">Indica el nombre de la localidad:</label>
+      <input
+        type="text"
+        className="form-control"
+        value={localidadOtra}
+        onChange={(e) => setLocalidadOtra(e.target.value)}
+      />
+    </div>
+  )}
 </div>
+
 
 
 
