@@ -1,10 +1,19 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import logo from "./assets/logo.jpg";
 
 import { localidades } from "./assets/localidades";
 
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+
+//import { PDFDownloadLink } from "@react-pdf/renderer";----
+//import FormatoPDF from './components/FupsPDF';  ---
+
+
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import FormatoPDF from './components/FupsPDF'; // ajusta la ruta si 
+//import html2pdf from 'html2pdf.js'; // Importa la biblioteca
+
 const renderTooltip = (props) => (
   <Tooltip id="tooltip-datos-generales" {...props}>
     Selecciona “Incorporación” si es la primera vez que llenas este formato para un programa
@@ -382,6 +391,24 @@ gasto_mensual_familiar: gastoMensualFamiliar
     } catch (error) {
       console.error("Error al guardar:", error);
       alert("Error al guardar en base de datos");
+    }
+  };
+
+  // Referencia para el div que queremos convertir a PDF
+  const pdfRef = useRef();
+
+  // Función para descargar el PDF
+  const handleDownloadPdf = () => {
+    const element = pdfRef.current;
+    if (element) {
+      const options = {
+        margin: 10,
+        filename: 'formato_solicitante.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().from(element).set(options).save();
     }
   };
 
@@ -1653,6 +1680,30 @@ dirección electrónica: https://sebiso.hidalgo.gob.mx/AvisosPrivacidad
                         >
                           Guardar
                         </button>
+<div style={{ textAlign: 'right', marginTop: '20px' }}>
+  <PDFDownloadLink
+    document={<FormatoPDF />}
+    fileName="formato_solicitante.pdf"
+    style={{
+      backgroundColor: '#8d1d32',
+      color: '#fff',
+      padding: '10px 20px',
+      borderRadius: '6px',
+      fontWeight: 'bold',
+      textDecoration: 'none'
+    }}
+  >
+    {({ loading }) =>
+      loading ? 'Generando PDF...' : 'Descargar PDF'
+    }
+
+  </PDFDownloadLink>
+</div>
+
+
+
+
+
                       </fieldset>
                     </form>
                   ) : (
